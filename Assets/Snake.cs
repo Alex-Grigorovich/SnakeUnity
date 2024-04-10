@@ -1,17 +1,26 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.UI;
 using UnityEngine;
 
 public class Snake : MonoBehaviour
 {
     private Vector2 _direction = Vector2.right;
+    
     private List<Transform> _segments = new List<Transform>();
     public Transform segmentPrefab;
     public int initalSize = 4;
+    public int score; 
+    [SerializeField] private Text scoreText;
+    private bool GameIsPaused;
+    public GameObject pauseMenuUI;
+
+    
     
     private void Start()
     {
+        
         ResetState();
     }
 
@@ -25,8 +34,47 @@ public class Snake : MonoBehaviour
             _direction = Vector2.left;
         if (Input.GetKeyDown(KeyCode.D))
             _direction = Vector2.right;
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            if (GameIsPaused)
+            {
+                Resume();
+            }
+            else
+            {
+                Pause();
+            }
+        }
+        
+    }
+    
+    void Resume()
+    {
+        pauseMenuUI.SetActive(false);
+        Time.timeScale = 1f;
+        GameIsPaused = false;
+    }
+    void Pause()
+    {
+        pauseMenuUI.SetActive(true);
+        Time.timeScale = 0f;
+        GameIsPaused = true;
+        
+    }
+    
+    
+    public void IncreaseScore()
+    {
+        score = score + 100;
+        scoreText.text = "Score: " + score.ToString();
     }
 
+    public void ResetScore()
+    {
+        score = 0 ;
+        scoreText.text = "Score: " + score.ToString();
+    }
+    
     private void FixedUpdate()
     {
         for (int i = _segments.Count - 1; i > 0; i--)
@@ -47,6 +95,7 @@ public class Snake : MonoBehaviour
         segment.position = _segments[_segments.Count - 1].position;
         
         _segments.Add(segment);
+        
     }
 
     private void ResetState()
@@ -54,6 +103,7 @@ public class Snake : MonoBehaviour
         for (int i = 1; i < _segments.Count; i++)
         {
             Destroy(_segments[i].gameObject);
+            
         }
         
         _segments.Clear();
@@ -73,10 +123,12 @@ public class Snake : MonoBehaviour
         if (other.tag == "Food")
         {
             Grow();
+            IncreaseScore();
         }
         else if (other.tag == "Obstacle")
         {
             ResetState();
+            ResetScore();
         }
     }
     
